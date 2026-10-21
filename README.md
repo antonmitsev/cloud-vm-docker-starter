@@ -10,6 +10,7 @@ A small, application-independent starting point for one Google Cloud Compute Eng
 - [`docs/operations.md`](docs/operations.md): start, update, inspect, and recover the Compose stack.
 - [`docs/local-simulation.md`](docs/local-simulation.md): exercise the same gateway configuration and a disposable SQLite database locally before renting a VM.
 - [`docs/cloud-infra-plan.md`](docs/cloud-infra-plan.md): delivery plan, decisions, review gates, and acceptance criteria for a senior developer setting up the real cloud environment.
+- [`docs/gcp-deployment-plan.md`](docs/gcp-deployment-plan.md): ordered release plan from a reviewed GCP project to a public HTTPS readiness page, followed by an application deployment later.
 
 ## Order of work
 

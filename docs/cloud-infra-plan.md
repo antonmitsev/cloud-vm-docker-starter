@@ -72,6 +72,8 @@ Sources: [SQLite selection guide](https://www.sqlite.org/whentouse.html), [SQLit
 
 ## Release sequence and stop conditions
 
+Use the [GCP deployment plan](gcp-deployment-plan.md) for the ordered release steps, evidence to collect, and rollback path.
+
 1. Complete the already documented [local simulation](local-simulation.md).
 2. Record decisions and estimate costs. Obtain owner review of the planned billable resources.
 3. Apply only the foundation and gateway. Verify access, disk mount, HTTPS, and reboot behavior.

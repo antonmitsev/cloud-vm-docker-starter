@@ -9,3 +9,10 @@ local.env
 *.bak
 *.backup
 backups/
+infra/.terraform/
+infra/terraform.tfstate*
+infra/*.tfvars
+infra/*.tfvars.json
+infra/backend.hcl
+infra/*.tfplan
+infra/crash.log

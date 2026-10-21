@@ -1,0 +1,8 @@
+project_id         = "your-gcp-project-id"
+region             = "europe-west3"
+zone               = "europe-west3-a"
+name_prefix        = "cloud-app"
+machine_type       = "e2-small"
+boot_disk_gb       = 20
+data_disk_gb       = 20
+backup_bucket_name = "globally-unique-private-backup-bucket-name"

@@ -1,6 +1,6 @@
 # Cloud VM Docker Starter
 
-A small, application-independent starting point for one Google Cloud Compute Engine VM running Docker Compose. It provides a public HTTPS entry point and a persistent data directory for a future Node or Java application. No VM, DNS record, database, or application is created by this repository.
+A small, application-independent starting point for one Google Cloud Compute Engine VM running Docker Compose. It provides a public HTTPS entry point and a persistent data directory for a future Node or Java application. The Terraform files can create the cloud foundation after an explicit `terraform apply`; no VM, DNS record, database, or application has been created yet.
 
 ## Layout
 
@@ -11,11 +11,12 @@ A small, application-independent starting point for one Google Cloud Compute Eng
 - [`docs/local-simulation.md`](docs/local-simulation.md): exercise the same gateway configuration and a disposable SQLite database locally before renting a VM.
 - [`docs/cloud-infra-plan.md`](docs/cloud-infra-plan.md): delivery plan, decisions, review gates, and acceptance criteria for a senior developer setting up the real cloud environment.
 - [`docs/gcp-deployment-plan.md`](docs/gcp-deployment-plan.md): ordered release plan from a reviewed GCP project to a public HTTPS readiness page, followed by an application deployment later.
+- [`infra/`](infra/README.md): Terraform configuration and instructions for creating the VM, network, static IP, retained data disk, and private backup bucket.
 
 ## Order of work
 
 1. Review the [VM setup guide](docs/google-cloud-vm.md) and choose a region and machine size using the [Google Cloud pricing calculator](https://cloud.google.com/products/calculator). Create a billing budget alert; an alert is not a spending cap.
-2. Provision the VM and its separate data disk. Mount the disk at `/srv/cloud-app-data` before starting Compose.
+2. Provision the VM and its separate data disk using the [Terraform foundation](infra/README.md) or the manual VM guide. Confirm the data disk survives VM deletion, then mount it at `/srv/cloud-app-data` before starting Compose.
 3. Install Docker Engine and the Compose plugin from Docker's official Ubuntu repository.
 4. Point an owned DNS name to the VM, then copy `.env.example` to `.env` and set `APP_DOMAIN`.
 5. Create `/srv/cloud-app-data/caddy` and `/srv/cloud-app-data/caddy-config` on the mounted disk; run `sudo docker compose up -d` from this repository on the VM.

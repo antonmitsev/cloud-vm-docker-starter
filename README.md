@@ -9,6 +9,7 @@ A small, application-independent starting point for one Google Cloud Compute Eng
 - [`docs/sqlite-and-backups.md`](docs/sqlite-and-backups.md): mount a future SQLite database directory, take consistent backups, and restore it.
 - [`docs/operations.md`](docs/operations.md): start, update, inspect, and recover the Compose stack.
 - [`docs/local-simulation.md`](docs/local-simulation.md): exercise the same gateway configuration and a disposable SQLite database locally before renting a VM.
+- [`docs/cloud-infra-plan.md`](docs/cloud-infra-plan.md): delivery plan, decisions, review gates, and acceptance criteria for a senior developer setting up the real cloud environment.
 
 ## Order of work
 

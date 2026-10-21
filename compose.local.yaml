@@ -1,0 +1,22 @@
+services:
+  sqlite_probe:
+    image: python:3.13-alpine
+    profiles: [local]
+    entrypoint: [python, /probe.py]
+    volumes:
+      - type: bind
+        source: ./local/sqlite_probe.py
+        target: /probe.py
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${DATA_ROOT:?Set DATA_ROOT in local.env}/sqlite-probe
+        target: /data
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${DATA_ROOT:?Set DATA_ROOT in local.env}/backups
+        target: /backups
+        bind:
+          create_host_path: false

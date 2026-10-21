@@ -5,8 +5,8 @@ services:
     environment:
       APP_DOMAIN: ${APP_DOMAIN:?Set APP_DOMAIN in .env}
     ports:
-      - "80:80"
-      - "443:443"
+      - "${BIND_ADDRESS:-0.0.0.0}:${HTTP_HOST_PORT:-80}:80"
+      - "${BIND_ADDRESS:-0.0.0.0}:${HTTPS_HOST_PORT:-443}:${HTTPS_CONTAINER_PORT:-443}"
     volumes:
       - type: bind
         source: ./Caddyfile
@@ -15,12 +15,12 @@ services:
         bind:
           create_host_path: false
       - type: bind
-        source: /srv/cloud-app-data/caddy
+        source: ${DATA_ROOT:-/srv/cloud-app-data}/caddy
         target: /data
         bind:
           create_host_path: false
       - type: bind
-        source: /srv/cloud-app-data/caddy-config
+        source: ${DATA_ROOT:-/srv/cloud-app-data}/caddy-config
         target: /config
         bind:
           create_host_path: false

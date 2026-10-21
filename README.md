@@ -8,6 +8,7 @@ A small, application-independent starting point for one Google Cloud Compute Eng
 - [`compose.yaml`](compose.yaml) and [`Caddyfile`](Caddyfile): a minimal HTTPS readiness page. Replace the Caddy response with a reverse proxy when an application exists.
 - [`docs/sqlite-and-backups.md`](docs/sqlite-and-backups.md): mount a future SQLite database directory, take consistent backups, and restore it.
 - [`docs/operations.md`](docs/operations.md): start, update, inspect, and recover the Compose stack.
+- [`docs/local-simulation.md`](docs/local-simulation.md): exercise the same gateway configuration and a disposable SQLite database locally before renting a VM.
 
 ## Order of work
 
@@ -19,6 +20,8 @@ A small, application-independent starting point for one Google Cloud Compute Eng
 6. Check `https://<your-domain>/` for the readiness response. Add the application only after the VM, HTTPS, disk, and backup workflow are understood.
 
 The Compose file intentionally has no application service and no database container. A future app can use SQLite on the mounted data disk; MariaDB can be added if actual requirements call for it. The VM, disks, external IP, snapshots, and traffic are billed separately. This repository contains no credentials; keep real `.env` files and backup archives outside Git.
+
+To try the setup without cloud resources, follow the [local simulation](docs/local-simulation.md). It runs the same Caddyfile and base Compose service with local-only ports and disposable bind mounts. The SQLite probe lives in a separate Compose file and is never part of the VM setup.
 
 ## Scope
 

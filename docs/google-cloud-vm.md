@@ -68,4 +68,6 @@ sudo docker compose up -d
 
 Replace `APP_DOMAIN` with your real domain. The readiness page should then answer at `https://<your-domain>/`. Caddy needs public TCP 80 and 443, matching DNS, and writable persistent `/data` to issue and renew certificates. See [automatic HTTPS](https://caddyserver.com/docs/automatic-https).
 
+The optional `DATA_ROOT`, `BIND_ADDRESS`, and port overrides in `compose.yaml` exist for local simulation. On the VM, leave them unset so Compose uses `/srv/cloud-app-data`, public TCP 80, and public TCP 443. Do not copy `local.env.example` to the VM.
+
 No application is deployed by this step. See [operations](operations.md) before updating the stack.

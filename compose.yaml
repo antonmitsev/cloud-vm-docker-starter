@@ -1,0 +1,26 @@
+services:
+  gateway:
+    image: caddy:2
+    restart: unless-stopped
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?Set APP_DOMAIN in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - type: bind
+        source: ./Caddyfile
+        target: /etc/caddy/Caddyfile
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /srv/cloud-app-data/caddy
+        target: /data
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /srv/cloud-app-data/caddy-config
+        target: /config
+        bind:
+          create_host_path: false

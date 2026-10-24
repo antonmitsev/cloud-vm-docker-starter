@@ -5,7 +5,7 @@ A small, application-independent starting point for one Google Cloud Compute Eng
 ## Layout
 
 - [`docs/google-cloud-vm.md`](docs/google-cloud-vm.md): create the VM, restrict network access, attach and mount a data disk, and install Docker.
-- [`compose.yaml`](compose.yaml) and [`Caddyfile`](Caddyfile): a minimal HTTPS readiness page. Replace the Caddy response with a reverse proxy when an application exists.
+- [`compose.yaml`](compose.yaml) and [`Caddyfile`](Caddyfile): a minimal HTTPS readiness page at `/` and a dedicated `/health` endpoint. Route application traffic and health checks to the app when it exists.
 - [`docs/sqlite-and-backups.md`](docs/sqlite-and-backups.md): mount a future SQLite database directory, take consistent backups, and restore it.
 - [`docs/operations.md`](docs/operations.md): start, update, inspect, and recover the Compose stack.
 - [`docs/local-simulation.md`](docs/local-simulation.md): exercise the same gateway configuration and a disposable SQLite database locally before renting a VM.
@@ -20,7 +20,7 @@ A small, application-independent starting point for one Google Cloud Compute Eng
 3. Install Docker Engine and the Compose plugin from Docker's official Ubuntu repository.
 4. Point an owned DNS name to the VM, then copy `.env.example` to `.env` and set `APP_DOMAIN`.
 5. Create `/srv/cloud-app-data/caddy` and `/srv/cloud-app-data/caddy-config` on the mounted disk; run `sudo docker compose up -d` from this repository on the VM.
-6. Check `https://<your-domain>/` for the readiness response. Add the application only after the VM, HTTPS, disk, and backup workflow are understood.
+6. Check `https://<your-domain>/` for the readiness response and `https://<your-domain>/health` for `healthy`. Point the uptime check at `/health`. Add the application only after the VM, HTTPS, disk, and backup workflow are understood.
 
 The Compose file intentionally has no application service and no database container. A future app can use SQLite on the mounted data disk; MariaDB can be added if actual requirements call for it. The VM, disks, external IP, snapshots, and traffic are billed separately. This repository contains no credentials; keep real `.env` files and backup archives outside Git.
 

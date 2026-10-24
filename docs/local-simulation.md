@@ -26,11 +26,13 @@ The commands below use `docker` directly. Prefix the Docker commands with `sudo`
 docker compose --env-file local.env up -d gateway
 curl -sSI http://localhost:8088/
 curl -kfsS https://localhost:8443/
+curl -kfsS https://localhost:8443/health
 docker compose --env-file local.env up -d --force-recreate gateway
 curl -kfsS https://localhost:8443/
+curl -kfsS https://localhost:8443/health
 ```
 
-The HTTP response should redirect to `https://localhost:8443/`. Expected HTTPS response both times: `Cloud VM ready`. Caddy issues a local certificate that the host does not trust by default, which is why this disposable exercise uses `curl -k`. Public certificate issuance is only checked after real DNS and a cloud VM are available. The bind-mounted Caddy data survives recreation. You may also inspect `docker compose --env-file local.env logs gateway`.
+The HTTP response should redirect to `https://localhost:8443/`. The root HTTPS response should be `Cloud VM ready`; `/health` should return `healthy` before and after recreation. Other paths return 404, so monitoring can detect a wrong path. Caddy issues a local certificate that the host does not trust by default, which is why this disposable exercise uses `curl -k`. Public certificate issuance is only checked after real DNS and a cloud VM are available. The bind-mounted Caddy data survives recreation. You may also inspect `docker compose --env-file local.env logs gateway`.
 
 ## Exercise SQLite persistence and recovery
 

@@ -21,7 +21,7 @@ services:
           create_host_path: false
 ```
 
-Do not publish the app's internal port with `ports`. In `Caddyfile`, replace the readiness response with `reverse_proxy app:3000` after confirming the app listens on port 3000 inside the Compose network. The exact port depends on the app. Keep secrets outside the image and Git; restrict access to the VM's `.env` or use a dedicated secret mechanism.
+Do not publish the app's internal port with `ports`. In `Caddyfile`, replace the root readiness handler with `reverse_proxy app:3000` after confirming the app listens on port 3000 inside the Compose network. Keep the `/health` URL stable for Monitoring, but change its handler to check the app's health when the app exists; a Caddy-only response does not detect app failure. The exact port depends on the app. Keep secrets outside the image and Git; restrict access to the VM's `.env` or use a dedicated secret mechanism.
 
 ## Make a consistent backup
 

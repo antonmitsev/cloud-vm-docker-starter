@@ -1,3 +1,13 @@
 {$APP_DOMAIN} {
-	respond "Cloud VM ready" 200
+	handle /health {
+		respond "healthy" 200
+	}
+
+	handle / {
+		respond "Cloud VM ready" 200
+	}
+
+	handle {
+		respond 404
+	}
 }

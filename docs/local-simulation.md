@@ -1,6 +1,6 @@
 # Local infrastructure simulation
 
-This is a no-cloud integration exercise for Docker Compose, Caddy HTTPS, bind-mounted persistence, and SQLite backup/restore. It uses the production `compose.yaml` and `Caddyfile` with local environment values. `compose.local.yaml` adds a disposable SQLite probe; it is not part of the VM deployment. No application code is needed.
+This is a no-cloud integration exercise for Docker Compose, Caddy HTTPS, bind-mounted persistence, and SQLite backup/restore. It uses the production `compose.yaml` and `Caddyfile` with local environment values. `compose.local.yaml` adds a disposable SQLite probe implemented with Node.js's built-in `node:sqlite` module; it is not part of the VM deployment. No application code is needed.
 
 The exercise does **not** reproduce a Compute Engine VM, IAM, cloud firewall, public DNS, external TLS certificate issuance, Persistent Disk attachment, disk snapshots, Cloud Storage, billing, or behavior after physical host failure. Those require a real cloud environment. A full local guest-OS VM would require separate virtualization software such as QEMU/KVM; this exercise only requires Docker.
 

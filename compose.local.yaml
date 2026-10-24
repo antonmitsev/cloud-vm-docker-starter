@@ -1,12 +1,12 @@
 services:
   sqlite_probe:
-    image: python:3.13-alpine
+    image: node:26-alpine
     profiles: [local]
-    entrypoint: [python, /probe.py]
+    entrypoint: [node, /probe.mjs]
     volumes:
       - type: bind
-        source: ./local/sqlite_probe.py
-        target: /probe.py
+        source: ./local/sqlite_probe.mjs
+        target: /probe.mjs
         read_only: true
         bind:
           create_host_path: false

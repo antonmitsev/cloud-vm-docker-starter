@@ -24,6 +24,8 @@ A small, application-independent starting point for one Google Cloud Compute Eng
 
 The Compose file intentionally has no application service and no database container. A future app can use SQLite on the mounted data disk; MariaDB can be added if actual requirements call for it. The VM, disks, external IP, snapshots, and traffic are billed separately. This repository contains no credentials; keep real `.env` files and backup archives outside Git.
 
+The gateway VM does not need a host-installed Node.js runtime. If a Node application is added later, build it with a supported, patched Node.js container image, audit its npm dependencies separately, and publish a new image after runtime security releases. See the [future application release plan](docs/gcp-deployment-plan.md).
+
 To try the setup without cloud resources, follow the [local simulation](docs/local-simulation.md). It runs the same Caddyfile and base Compose service with local-only ports and disposable bind mounts. The SQLite probe lives in a separate Compose file and is never part of the VM setup.
 
 ## Scope

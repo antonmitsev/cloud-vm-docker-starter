@@ -1,12 +1,12 @@
-# Реално изградената Google Cloud среда
+# Анонимизиран отчет за изградената Google Cloud среда
 
 **Последно потвърдено в работната сесия:** 25 октомври 2026 г.
 
-**Проект:** `example-project-id`
+**Проект:** идентификаторът е премахнат от публичното хранилище
 
 **Подход:** ръчна настройка през Google Cloud Console и Cloud Shell; Terraform конфигурацията в `infra/` не е прилагана.
 
-Това е запис на направеното и на резултатите, които видяхме в конзолата и терминала. Не е автоматична проверка на текущото състояние в Google Cloud. Преди промяна или възстановяване сравни посочените стойности с реалните ресурси.
+Това е запис на направеното и на резултатите, които видяхме в конзолата и терминала. Имената на ресурси, домейнът, адресите, UUID, service account и идентификаторите на обекти са умишлено премахнати или заменени с условни стойности. Не е автоматична проверка на текущото състояние в Google Cloud. Преди промяна или възстановяване вземи истинските стойности от конзолата или от частен операторски запис.
 
 ## Ресурси и настройки
 
@@ -14,33 +14,33 @@
 | --- | --- | --- |
 | Проект и разходи | Билинг акаунтът е свързан с проекта. Месечен бюджет **$26.50** за билинг акаунта, известия при 50%, 90%, 100% и 150%. Бюджетът изпраща известия, но не спира автоматично таксуването. | **Billing → Budgets & caps** |
 | Местоположение | Регион `europe-west1` (Белгия), зона `europe-west1-b`. | **Compute Engine → VM instances** |
-| Мрежа | VPC `cloud-app-vpc`, subnet `cloud-app-subnet`, диапазон `10.42.0.0/24`. | **VPC network → VPC networks** |
-| Firewall | `cloud-app-web`: входящ TCP 80/443 от `0.0.0.0/0`; `cloud-app-iap-ssh`: входящ TCP 22 от `35.235.240.0/20`. И двете правила са за мрежов tag `cloud-app-server` във `cloud-app-vpc`; tag е приложен към VM. | **VPC network → Firewall** |
-| Публичен адрес | Резервиран статичен IPv4 `cloud-api-ip` = `203.0.113.10`, прикачен към VM. | **VPC network → IP addresses** |
-| VM | `cloud-app-vm`, Ubuntu 24.04, `e2-small` (0.5 vCPU, 2 GiB RAM), зона `europe-west1-b`. Основен вътрешен адрес `10.0.0.2`. Достъп чрез IAP и OS Login. | **Compute Engine → VM instances** |
-| Boot disk | 20 GiB Balanced Persistent Disk `cloud-app-vm`. В конзолата беше показан график `default-schedule-1` за дневни snapshots с 14 дни съхранение. | **Compute Engine → Disks** |
-| Data disk | 20 GiB Balanced Persistent Disk `cloud-app-data`, прикачен към VM с правило **Keep disk** при изтриване на VM. Форматиран като ext4, UUID `00000000-0000-0000-0000-000000000000`, монтиран на `/srv/cloud-app-data`. График `cloud-app-data-daily` за дневни snapshots със 7 дни съхранение. | **Compute Engine → Disks** |
-| VM identity | Service account `cloud-app-vm@example-project-id.iam.gserviceaccount.com`. На bucket ниво е дадена роля **Storage Object Creator**. На VM са избрани пълни Cloud API access scopes; реалният достъп зависи и от IAM ролите. | **IAM & Admin → Service Accounts** и **Cloud Storage → Buckets → Permissions** |
-| Backup bucket | Частен bucket `example-project-id-cloud-app-backups` в `europe-west1`, Standard, uniform bucket-level access и public access prevention. Soft delete: 7 дни. | **Cloud Storage → Buckets** |
-| DNS и HTTPS | `api.example.com` сочи към `203.0.113.10`. DNS A записът е настроен извън GCP. Caddy издаде публичен HTTPS сертификат автоматично. | DNS управлението на домейна; VM/Caddy за HTTPS |
-| Наблюдение | HTTPS uptime check `cloud-app-https` за `api.example.com/health`, очаква `200` и съдържание `healthy`; имейл известие за неуспех беше получено по време на настройката. | **Monitoring → Uptime checks** и **Monitoring → Alerting** |
+| Мрежа | Собствена VPC и subnet с частен IPv4 диапазон. Имената и диапазонът са премахнати. | **VPC network → VPC networks** |
+| Firewall | Входящ TCP 80/443 от интернет и TCP 22 само през IAP; правилата действат чрез tag на VM. | **VPC network → Firewall** |
+| Публичен адрес | Резервиран статичен IPv4, прикачен към VM. Адресът и името му са премахнати. | **VPC network → IP addresses** |
+| VM | Ubuntu 24.04, `e2-small` (0.5 vCPU, 2 GiB RAM), зона `europe-west1-b`. Достъп чрез IAP и OS Login. Името и вътрешният IP са премахнати. | **Compute Engine → VM instances** |
+| Boot disk | 20 GiB Balanced Persistent Disk. В конзолата беше показан дневен snapshot график с 14 дни съхранение. | **Compute Engine → Disks** |
+| Data disk | 20 GiB Balanced Persistent Disk, прикачен към VM с правило **Keep disk** при изтриване на VM. Форматиран като ext4 и монтиран по UUID на `/srv/cloud-app-data`; уникалният UUID не е публикуван. Дневни snapshots със 7 дни съхранение. | **Compute Engine → Disks** |
+| VM identity | Специален service account за VM. На bucket ниво е дадена роля **Storage Object Creator**. На VM са избрани пълни Cloud API access scopes; реалният достъп зависи и от IAM ролите. | **IAM & Admin → Service Accounts** и **Cloud Storage → Buckets → Permissions** |
+| Backup bucket | Частен bucket в `europe-west1`, Standard, uniform bucket-level access и public access prevention. Soft delete: 7 дни. Името е премахнато. | **Cloud Storage → Buckets** |
+| DNS и HTTPS | A запис за поддомейн сочи към статичния IPv4 адрес. Caddy издаде публичен HTTPS сертификат автоматично. Домейнът и адресът са премахнати. | DNS управлението на домейна; VM/Caddy за HTTPS |
+| Наблюдение | HTTPS uptime check за `/health`, очаква `200` и съдържание `healthy`; имейл известие за неуспех беше получено по време на настройката. | **Monitoring → Uptime checks** и **Monitoring → Alerting** |
 
 При избора на региона калкулаторът показваше приблизително **$15.45 на месец** за разглежданата конфигурация на VM с boot disk в Белгия. Това не е реална фактура и не включва непременно всички отделно таксувани ресурси като data disk, публичен IPv4, snapshots, Cloud Storage и трафик.
 
 ## Какво направихме на VM
 
-1. Влязохме през Cloud Shell с `gcloud compute ssh` и IAP. Cloud Shell е отделна временна работна среда; командите за Docker и диска се изпълняват след SSH вход в `cloud-app-vm`.
+1. Влязохме през Cloud Shell с `gcloud compute ssh` и IAP. Cloud Shell е отделна временна работна среда; командите за Docker и диска се изпълняват след SSH вход в VM.
 2. Разпознахме отделния празен диск като `/dev/sdb`, форматирахме го **веднъж** и го монтирахме по UUID. `findmnt` показа `/dev/sdb` като ext4 на `/srv/cloud-app-data`; `df -h` показа приблизително 20 GiB свободно място. Монтирането беше проверено и след рестарт на VM.
 3. Инсталирахме Docker Engine 29.9.2 и Docker Compose 5.6.1. Тези версии са запис от настройката, а не обещание за бъдещата им версия.
-4. Поставихме проекта в `/srv/cloud-vm-docker-starter`. Реалният `.env` е извън Git, с `APP_DOMAIN=api.example.com`; стойности или съдържанието му не трябва да се копират в хранилището.
-5. Стартирахме Compose услугата `gateway` с Caddy. Началният адрес връща `Cloud VM ready`. Специалният `/health` връща `200 healthy`; конфигурацията задава `404` за непознатите пътища. Промяната за `/health` е в Git комит `07e7c8c` и беше приложена на VM с пресъздаване на `gateway` контейнера.
+4. Поставихме проекта в `/srv/cloud-vm-docker-starter`. Реалният `.env` е извън Git, с `APP_DOMAIN` за истинския домейн; стойностите му не трябва да се копират в хранилището.
+5. Стартирахме Compose услугата `gateway` с Caddy. Началният адрес връща `Cloud VM ready`. Специалният `/health` връща `200 healthy`; конфигурацията задава `404` за непознатите пътища. Промяната беше приложена на VM с пресъздаване на `gateway` контейнера.
 6. Настроихме snapshot график за data disk и проверихме ръчно отделен път за SQLite резервно копие към Cloud Storage.
 
-Проверки от VM или друга машина:
+Проверки от VM или друга машина (замени `YOUR_DOMAIN` с истинския домейн):
 
 ```sh
-curl -i https://api.example.com/health
-curl -i https://api.example.com/
+curl -i https://YOUR_DOMAIN/health
+curl -i https://YOUR_DOMAIN/
 ```
 
 На VM проверявай монтирания диск преди работа с Compose:
@@ -54,9 +54,9 @@ sudo docker compose ps
 За достъп от Cloud Shell:
 
 ```sh
-gcloud compute ssh cloud-app-vm \
-  --project=example-project-id \
-  --zone=europe-west1-b \
+gcloud compute ssh VM_NAME \
+  --project=PROJECT_ID \
+  --zone=ZONE \
   --tunnel-through-iap
 ```
 
@@ -64,9 +64,9 @@ SSH командата може да поиска пасфразата на ло
 
 ## Проверка на резервно копие и възстановяване
 
-- VM service account успя да създаде обект в backup bucket чрез Cloud Storage JSON API `objects.insert`. Пробният текстов обект беше `probe-20261024T215930Z.txt`.
+- VM service account успя да създаде пробен обект в backup bucket чрез Cloud Storage JSON API `objects.insert`.
 - `gcloud storage cp` от VM върна **403** за `storage.objects.get` при достъп до обект, защото ролята **Storage Object Creator** не дава право за четене. При бъдеща автоматизация не приемай, че тази CLI команда работи с текущите права; използвай проверения write-only API подход или прегледай IAM модела.
-- Качихме пробна SQLite база `sqlite-probe-20261024T220159Z.sqlite` в bucket. В отделна Cloud Shell с операторски достъп я изтеглихме и отворихме: `PRAGMA integrity_check` върна `ok`, а пробният запис беше `backup-ok`.
+- Качихме пробна SQLite база в bucket. В отделна Cloud Shell с операторски достъп я изтеглихме и отворихме: `PRAGMA integrity_check` върна `ok`, а пробният запис беше `backup-ok`.
 - Това е **ръчен тест с пробна база**, не автоматизирано архивиране на истинско приложение. Snapshot графикът защитава диска по отделен механизъм; не сме потвърждавали всеки автоматичен snapshot или възстановяване от snapshot.
 
 ## Какво още не е готово

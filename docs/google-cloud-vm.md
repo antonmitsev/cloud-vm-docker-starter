@@ -58,7 +58,7 @@ Use `sudo docker ...` for operator commands. Membership in the `docker` group gr
 After the DNS A record resolves to the VM:
 
 ```sh
-sudo git clone https://github.com/example-user/cloud-vm-docker-starter.git /srv/cloud-vm-docker-starter
+sudo git clone REPOSITORY_URL /srv/cloud-vm-docker-starter
 cd /srv/cloud-vm-docker-starter
 sudo cp .env.example .env
 sudoedit .env

@@ -1,6 +1,6 @@
 # Cloud VM Docker Starter
 
-A small, application-independent starting point for one Google Cloud Compute Engine VM running Docker Compose. It provides a public HTTPS entry point and a persistent data directory for a future Node or Java application. The Terraform files can create the cloud foundation after an explicit `terraform apply`; no VM, DNS record, database, or application has been created yet.
+A small, application-independent starting point for one Google Cloud Compute Engine VM running Docker Compose. The VM, DNS, public HTTPS entry point, persistent data disk, and monitoring check were set up manually; see the [actual Google Cloud setup](docs/gcp-current-state.md). No application or production database has been deployed. The Terraform files have not been applied to this project.
 
 ## Layout
 
@@ -11,9 +11,11 @@ A small, application-independent starting point for one Google Cloud Compute Eng
 - [`docs/local-simulation.md`](docs/local-simulation.md): exercise the same gateway configuration and a disposable SQLite database locally before renting a VM.
 - [`docs/cloud-infra-plan.md`](docs/cloud-infra-plan.md): delivery plan, decisions, review gates, and acceptance criteria for a senior developer setting up the real cloud environment.
 - [`docs/gcp-deployment-plan.md`](docs/gcp-deployment-plan.md): ordered release plan from a reviewed GCP project to a public HTTPS readiness page, followed by an application deployment later.
+- [`docs/gcp-current-state.md`](docs/gcp-current-state.md): record of the manually created GCP resources, observed checks, access commands, and remaining work.
+- [`docs/gcp-journey-bg.md`](docs/gcp-journey-bg.md): Bulgarian walkthrough of the manual setup, from project and budget through DNS, HTTPS, backups, and monitoring.
 - [`infra/`](infra/README.md): Terraform configuration and instructions for creating the VM, network, static IP, retained data disk, and private backup bucket.
 
-## Order of work
+## Setup order for a new environment
 
 1. Review the [VM setup guide](docs/google-cloud-vm.md) and choose a region and machine size using the [Google Cloud pricing calculator](https://cloud.google.com/products/calculator). Create a billing budget alert; an alert is not a spending cap.
 2. Provision the VM and its separate data disk using the [Terraform foundation](infra/README.md) or the manual VM guide. Confirm the data disk survives VM deletion, then mount it at `/srv/cloud-app-data` before starting Compose.

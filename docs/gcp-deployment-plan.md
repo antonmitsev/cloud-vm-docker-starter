@@ -1,6 +1,6 @@
 # GCP deployment plan
 
-**Status:** deployment plan with an unapplied [Terraform foundation](../infra/README.md). No paid cloud resources or public site have been created.  
+**Status:** the [Google Cloud foundation was created manually](gcp-current-state.md), and the HTTPS readiness page is live. The [Terraform foundation](../infra/README.md) has not been applied. The stages below remain a release checklist; the actual implementation and outstanding items are recorded separately.
 **Scope:** release 0 brings up the VM, persistent disk, Docker, and the existing Caddy readiness page. Release 1 adds a real application after its image, schema, backup, and rollback are defined. The [infrastructure plan](cloud-infra-plan.md) records the architecture and security decisions; the [VM setup guide](google-cloud-vm.md) supplies manual host steps.
 
 ## Inputs and release record

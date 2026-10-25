@@ -1,6 +1,6 @@
 # Cloud VM Docker Starter
 
-A small, application-independent starting point for one Google Cloud Compute Engine VM running Docker Compose. The VM, DNS, public HTTPS entry point, persistent data disk, and monitoring check were set up manually; see the [actual Google Cloud setup](docs/gcp-current-state.md). No application or production database has been deployed. The Terraform files have not been applied to this project.
+A small, application-independent starting point for one Google Cloud Compute Engine VM running Docker Compose. The VM, DNS, Cloudflare-proxied HTTPS entry point, persistent data disk, and monitoring check were set up manually; see the [actual Google Cloud setup](docs/gcp-current-state.md). No application or production database has been deployed. The Terraform files have not been applied to this project.
 
 ## Layout
 
@@ -13,6 +13,7 @@ A small, application-independent starting point for one Google Cloud Compute Eng
 - [`docs/gcp-deployment-plan.md`](docs/gcp-deployment-plan.md): ordered release plan from a reviewed GCP project to a public HTTPS readiness page, followed by an application deployment later.
 - [`docs/gcp-current-state.md`](docs/gcp-current-state.md): record of the manually created GCP resources, observed checks, access commands, and remaining work.
 - [`docs/gcp-journey-bg.md`](docs/gcp-journey-bg.md): Bulgarian walkthrough of the manual setup, from project and budget through DNS, HTTPS, backups, and monitoring.
+- [`docs/cloudflare-single-subdomain-bg.md`](docs/cloudflare-single-subdomain-bg.md): Bulgarian guide to proxying one subdomain on Cloudflare Free while keeping the primary domain's DNS provider, then restricting direct origin access.
 - [`infra/`](infra/README.md): Terraform configuration and instructions for creating the VM, network, static IP, retained data disk, and private backup bucket.
 
 ## Setup order for a new environment

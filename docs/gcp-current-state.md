@@ -15,17 +15,23 @@
 | Проект и разходи | Билинг акаунтът е свързан с проекта. Месечен бюджет **$26.50** за билинг акаунта, известия при 50%, 90%, 100% и 150%. Бюджетът изпраща известия, но не спира автоматично таксуването. | **Billing → Budgets & caps** |
 | Местоположение | Регион `europe-west1` (Белгия), зона `europe-west1-b`. | **Compute Engine → VM instances** |
 | Мрежа | Собствена VPC и subnet с частен IPv4 диапазон. Имената и диапазонът са премахнати. | **VPC network → VPC networks** |
-| Firewall | Входящ TCP 80/443 от интернет и TCP 22 само през IAP; правилата действат чрез tag на VM. | **VPC network → Firewall** |
+| Firewall | Входящ TCP 80/443 е разрешен само от публикуваните IPv4 диапазони на Cloudflare; старото правило за `0.0.0.0/0` е изключено. TCP 22 остава разрешен само през IAP. Правилата действат чрез tag на VM. | **VPC network → Firewall** |
 | Публичен адрес | Резервиран статичен IPv4, прикачен към VM. Адресът и името му са премахнати. | **VPC network → IP addresses** |
 | VM | Ubuntu 24.04, `e2-small` (0.5 vCPU, 2 GiB RAM), зона `europe-west1-b`. Достъп чрез IAP и OS Login. Името и вътрешният IP са премахнати. | **Compute Engine → VM instances** |
 | Boot disk | 20 GiB Balanced Persistent Disk. В конзолата беше показан дневен snapshot график с 14 дни съхранение. | **Compute Engine → Disks** |
 | Data disk | 20 GiB Balanced Persistent Disk, прикачен към VM с правило **Keep disk** при изтриване на VM. Форматиран като ext4 и монтиран по UUID на `/srv/cloud-app-data`; уникалният UUID не е публикуван. Дневни snapshots със 7 дни съхранение. | **Compute Engine → Disks** |
 | VM identity | Специален service account за VM. На bucket ниво е дадена роля **Storage Object Creator**. На VM са избрани пълни Cloud API access scopes; реалният достъп зависи и от IAM ролите. | **IAM & Admin → Service Accounts** и **Cloud Storage → Buckets → Permissions** |
 | Backup bucket | Частен bucket в `europe-west1`, Standard, uniform bucket-level access и public access prevention. Soft delete: 7 дни. Името е премахнато. | **Cloud Storage → Buckets** |
-| DNS и HTTPS | A запис за поддомейн сочи към статичния IPv4 адрес. Caddy издаде публичен HTTPS сертификат автоматично. Домейнът и адресът са премахнати. | DNS управлението на домейна; VM/Caddy за HTTPS |
+| DNS и HTTPS | Авторитетните nameserver-и на основния домейн остават при досегашния DNS доставчик. API поддомейнът сочи с CNAME към проксиран hostname в отделна Cloudflare зона; Cloudflare for SaaS custom hostname и сертификатът са Active. Проксираният hostname сочи към статичния IPv4 адрес, а Caddy има публичен HTTPS сертификат за API поддомейна. Домейните и адресът са премахнати. | DNS управлението на двата домейна; Cloudflare for SaaS; VM/Caddy |
 | Наблюдение | HTTPS uptime check за `/health`, очаква `200` и съдържание `healthy`; имейл известие за неуспех беше получено по време на настройката. | **Monitoring → Uptime checks** и **Monitoring → Alerting** |
 
 При избора на региона калкулаторът показваше приблизително **$15.45 на месец** за разглежданата конфигурация на VM с boot disk в Белгия. Това не е реална фактура и не включва непременно всички отделно таксувани ресурси като data disk, публичен IPv4, snapshots, Cloud Storage и трафик.
+
+След промяната на firewall-а външна проверка на `/health` през Cloudflare върна `200 healthy` с `server: cloudflare` и `cf-ray`. Нови директни връзки към публичния IPv4 адрес на TCP 80 и 443 изтекоха по време. За новото правило използвахме [официалните IPv4 диапазони на Cloudflare](https://www.cloudflare.com/ips/); при тяхна промяна списъкът в GCP трябва да се обнови. IP филтърът допуска всички изходни адреси на Cloudflare, затова сам по себе си не удостоверява кой Cloudflare акаунт е изпратил заявка.
+
+Повторимите стъпки за отделния евтин домейн, custom hostname, DNS cutover и firewall са в [ръководството за един поддомейн през Cloudflare Free](cloudflare-single-subdomain-bg.md). Това е проверка на публичния трафик, а не пряк прочит на GCP firewall API след промяната.
+
+HTTPS има два независими сертификатни слоя: Cloudflare управлява edge сертификатите за custom hostname, а Caddy управлява origin сертификата за същия API домейн. Успешният `/health` отговор не е проверка на бъдещото ACME подновяване на Caddy; наблюдавай срока на origin сертификата и логовете при подновяване. Подробностите са в [раздела за сертификати](cloudflare-single-subdomain-bg.md#сертификати-и-подновяване).
 
 ## Какво направихме на VM
 

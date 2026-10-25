@@ -30,6 +30,8 @@ After an origin IP, DNS, certificate, or firewall change, check the public `/hea
 
 Cloudflare renews the visitor-facing custom-hostname certificate; Caddy renews the separate origin certificate. Check Cloudflare's certificate status and Caddy's ACME renewal logs and expiry independently. Caddy's HTTP-01 challenge needs a working port-80 path through Cloudflare; a public `200` from the edge alone does not prove the origin certificate will renew. See [certificate renewal details](cloudflare-single-subdomain-bg.md#сертификати-и-подновяване).
 
+To remove Cloudflare from the request path, [follow the direct-HTTPS rollback](cloudflare-single-subdomain-bg.md#връщане-към-директен-https-без-cloudflare): verify Caddy's certificate, reopen public TCP 80/443 in GCP, test the origin directly with the API hostname and SNI, then replace only the API CNAME with an A record at the primary DNS provider. No new certificate setup is needed while Caddy's existing certificate remains valid.
+
 ## Recovery boundaries
 
 - Recreating a container retains the bind-mounted data. Deleting the VM retains the separate data disk only when its `autoDelete` setting is disabled.

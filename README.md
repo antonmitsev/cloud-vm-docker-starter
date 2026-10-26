@@ -4,6 +4,7 @@ A small, application-independent starting point for one Google Cloud Compute Eng
 
 ## Layout
 
+- [`HANDOFF.md`](HANDOFF.md): current project state and the next session's priorities.
 - [`docs/google-cloud-vm.md`](docs/google-cloud-vm.md): create the VM, restrict network access, attach and mount a data disk, and install Docker.
 - [`compose.yaml`](compose.yaml) and [`Caddyfile`](Caddyfile): a minimal HTTPS readiness page at `/` and a dedicated `/health` endpoint. Route application traffic and health checks to the app when it exists.
 - [`docs/sqlite-and-backups.md`](docs/sqlite-and-backups.md): mount a future SQLite database directory, take consistent backups, and restore it.

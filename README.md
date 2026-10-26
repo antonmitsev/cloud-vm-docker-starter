@@ -14,14 +14,14 @@ A small, application-independent starting point for one Google Cloud Compute Eng
 - [`docs/gcp-current-state.md`](docs/gcp-current-state.md): record of the manually created GCP resources, observed checks, access commands, and remaining work.
 - [`docs/gcp-journey-bg.md`](docs/gcp-journey-bg.md): Bulgarian walkthrough of the manual setup, from project and budget through DNS, HTTPS, backups, and monitoring.
 - [`docs/cloudflare-single-subdomain-bg.md`](docs/cloudflare-single-subdomain-bg.md): Bulgarian guide to proxying one subdomain on Cloudflare Free while keeping the primary domain's DNS provider, then restricting direct origin access.
-- [`infra/`](infra/README.md): Terraform configuration and instructions for creating the VM, network, static IP, retained data disk, and private backup bucket.
+- [`infra/`](infra/README.md): unapplied Terraform draft, differences from the manually built environment, and a future import path.
 
 ## Setup order for a new environment
 
 1. Review the [VM setup guide](docs/google-cloud-vm.md) and choose a region and machine size using the [Google Cloud pricing calculator](https://cloud.google.com/products/calculator). Create a billing budget alert; an alert is not a spending cap.
-2. Provision the VM and its separate data disk using the [Terraform foundation](infra/README.md) or the manual VM guide. Confirm the data disk survives VM deletion, then mount it at `/srv/cloud-app-data` before starting Compose.
+2. For a new environment, use the [manual VM guide](docs/google-cloud-vm.md) or adapt and review the [Terraform draft](infra/README.md) for the chosen firewall and DNS route before applying it. Confirm the separate data disk survives VM deletion, then mount it at `/srv/cloud-app-data` before starting Compose.
 3. Install Docker Engine and the Compose plugin from Docker's official Ubuntu repository.
-4. Point an owned DNS name to the VM, then copy `.env.example` to `.env` and set `APP_DOMAIN`.
+4. Choose a direct DNS A record or the [documented Cloudflare route](docs/cloudflare-single-subdomain-bg.md) to the VM, then copy `.env.example` to `.env` and set `APP_DOMAIN`.
 5. Create `/srv/cloud-app-data/caddy` and `/srv/cloud-app-data/caddy-config` on the mounted disk; run `sudo docker compose up -d` from this repository on the VM.
 6. Check `https://<your-domain>/` for the readiness response and `https://<your-domain>/health` for `healthy`. Point the uptime check at `/health`. Add the application only after the VM, HTTPS, disk, and backup workflow are understood.
 

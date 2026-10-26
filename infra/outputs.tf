@@ -7,7 +7,7 @@ output "zone" {
 }
 
 output "public_ipv4" {
-  description = "Point your domain's DNS A record here."
+  description = "Reserved origin IPv4; use directly for an A record or as a Cloudflare fallback-origin target."
   value       = google_compute_address.web.address
 }
 

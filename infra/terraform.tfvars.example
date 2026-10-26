@@ -1,3 +1,4 @@
+# Illustrative values for a separate new environment, not an import of the manually built project.
 project_id         = "your-gcp-project-id"
 region             = "europe-west3"
 zone               = "europe-west3-a"

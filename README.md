@@ -10,6 +10,7 @@ A small, application-independent starting point for one Google Cloud Compute Eng
 - [`start.sh`](start.sh): first start on a prepared VM; fetches the repository archive without `.git` and starts Compose.
 - [`docs/from-zero-bg.md`](docs/from-zero-bg.md): from Google account and billing to disk, Docker, HTTPS, backup checks, uptime alerts, and Cloudflare.
 - [`docs/node-apps-bg.md`](docs/node-apps-bg.md): planned separate Node.js project, one container per module, and Caddy path routing through a shared Docker network.
+- [`docs/docker-disk-guard-bg.md`](docs/docker-disk-guard-bg.md): install and test the Docker data-disk guard on the VM.
 - [`example-applications/`](example-applications/README.md): runnable `gaz` and `mas` Node.js examples; edit one server file and restart only its container.
 - [`compose.apps.yaml`](compose.apps.yaml) and [`Caddyfile.apps`](Caddyfile.apps): optional gateway configuration for routing `/gaz` and `/mas` to separate application containers.
 - [`docs/google-cloud-vm.md`](docs/google-cloud-vm.md): create the VM, restrict network access, attach and mount a data disk, and install Docker.

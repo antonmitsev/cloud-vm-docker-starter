@@ -2,9 +2,13 @@
 
 A small, application-independent starting point for one Google Cloud Compute Engine VM running Docker Compose. The VM, DNS, Cloudflare-proxied HTTPS entry point, persistent data disk, and monitoring check were set up manually; see the [actual Google Cloud setup](docs/gcp-current-state.md). No application or production database has been deployed. The Terraform files have not been applied to this project.
 
+**Starting from nothing?** Follow the [Bulgarian step-by-step checklist](docs/from-zero-bg.md). It starts before project creation and billing, and gives each console location, action, and pass check. The public [project story](docs/gcp-journey-bg.md) records what happened in the existing environment; the checklist is the repeatable procedure.
+
 ## Layout
 
 - [`HANDOFF.md`](HANDOFF.md): current project state and the next session's priorities.
+- [`start.sh`](start.sh): first start on a prepared VM; fetches the repository archive without `.git` and starts Compose.
+- [`docs/from-zero-bg.md`](docs/from-zero-bg.md): from Google account and billing to disk, Docker, HTTPS, backup checks, uptime alerts, and Cloudflare.
 - [`docs/google-cloud-vm.md`](docs/google-cloud-vm.md): create the VM, restrict network access, attach and mount a data disk, and install Docker.
 - [`compose.yaml`](compose.yaml) and [`Caddyfile`](Caddyfile): a minimal HTTPS readiness page at `/` and a dedicated `/health` endpoint. Route application traffic and health checks to the app when it exists.
 - [`docs/sqlite-and-backups.md`](docs/sqlite-and-backups.md): mount a future SQLite database directory, take consistent backups, and restore it.
@@ -17,14 +21,19 @@ A small, application-independent starting point for one Google Cloud Compute Eng
 - [`docs/cloudflare-single-subdomain-bg.md`](docs/cloudflare-single-subdomain-bg.md): Bulgarian guide to proxying one subdomain on Cloudflare Free while keeping the primary domain's DNS provider, then restricting direct origin access.
 - [`infra/`](infra/README.md): unapplied Terraform draft, differences from the manually built environment, and a future import path.
 
-## Setup order for a new environment
+## First start on a prepared VM
 
-1. Review the [VM setup guide](docs/google-cloud-vm.md) and choose a region and machine size using the [Google Cloud pricing calculator](https://cloud.google.com/products/calculator). Create a billing budget alert; an alert is not a spending cap.
-2. For a new environment, use the [manual VM guide](docs/google-cloud-vm.md) or adapt and review the [Terraform draft](infra/README.md) for the chosen firewall and DNS route before applying it. Confirm the separate data disk survives VM deletion, then mount it at `/srv/cloud-app-data` before starting Compose.
-3. Install Docker Engine and the Compose plugin from Docker's official Ubuntu repository.
-4. Choose a direct DNS A record or the [documented Cloudflare route](docs/cloudflare-single-subdomain-bg.md) to the VM, then copy `.env.example` to `.env` and set `APP_DOMAIN`.
-5. Create `/srv/cloud-app-data/caddy` and `/srv/cloud-app-data/caddy-config` on the mounted disk; run `sudo docker compose up -d` from this repository on the VM.
-6. Check `https://<your-domain>/` for the readiness response and `https://<your-domain>/health` for `healthy`. Point the uptime check at `/health`. Add the application only after the VM, HTTPS, disk, and backup workflow are understood.
+After the [checklist](docs/from-zero-bg.md) has prepared the VM, mounted `/srv/cloud-app-data`, installed Docker Compose, opened TCP 80/443, and pointed your chosen DNS name at the VM, run **on the VM**:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/antonmitsev/cloud-vm-docker-starter/main/start.sh -o /tmp/cloud-vm-start.sh
+sudo install -m 0755 /tmp/cloud-vm-start.sh /usr/local/sbin/cloud-vm-start
+sudo APP_DOMAIN=api.example.com /usr/local/sbin/cloud-vm-start
+```
+
+Replace `api.example.com` with your own DNS name. The script fetches the repository archive without Git, writes `/srv/cloud-vm-docker-starter/.env` on first start, checks that the data disk is mounted, then runs `docker compose up -d --force-recreate`. On later runs it keeps the existing `.env`; run `sudo /usr/local/sbin/cloud-vm-start` to deliberately apply the current `main` version. For a fixed source revision use `sudo SOURCE_REF=<full-40-character-commit-id> /usr/local/sbin/cloud-vm-start`. Review updates before running this against a live application. Docker's restart policy handles ordinary VM boots; `start.sh` is for first setup and deliberate redeploys.
+
+Check `https://<your-domain>/health` for `200 healthy` before moving to backup, alerts, and Cloudflare. This repository contains no application or production database.
 
 The Compose file intentionally has no application service and no database container. A future app can use SQLite on the mounted data disk; MariaDB can be added if actual requirements call for it. The VM, disks, external IP, snapshots, and traffic are billed separately. This repository contains no credentials; keep real `.env` files and backup archives outside Git.
 

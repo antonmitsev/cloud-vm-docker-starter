@@ -3,7 +3,7 @@
 Run these commands from `/srv/cloud-vm-docker-starter` on the VM. Before any start or update, confirm the data disk is mounted:
 
 ```sh
-findmnt /srv/cloud-app-data
+findmnt --mountpoint /srv/cloud-app-data
 sudo docker compose ps
 sudo docker compose logs --tail=100 gateway
 ```
@@ -14,24 +14,30 @@ sudo docker compose logs --tail=100 gateway
 
 [Docker normally starts on Ubuntu boot](https://docs.docker.com/engine/install/linux-postinstall/) and restores previously started Compose containers because `gateway` uses [`restart: unless-stopped`](https://docs.docker.com/engine/containers/start-containers-automatically/). Compose itself is not a boot daemon, and no Bash startup script is needed for that normal restart. The current automatic restart needs a mount guard: Docker must not start the container using an ordinary directory on the boot disk if the separate data disk is missing.
 
-The [example systemd drop-in](../systemd/docker.service.d/10-require-data-disk.conf.example) adds [`RequiresMountsFor=`](https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html) to order `docker.service` after the mount and an `ExecStartPre=` check that the path is actually a mount point. It controls the Docker daemon's start order; it does not run `docker compose up` as a second process manager. First update the VM checkout to a reviewed commit containing this file. Replace the example path with the real data mount path from the private operator record, then install it once on the VM:
+The [example systemd drop-in](../systemd/docker.service.d/10-require-data-disk.conf.example) adds [`RequiresMountsFor=`](https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html) to order `docker.service` after the mount and an `ExecStartPre=` check that the path is actually a mount point. It controls the Docker daemon's start order; it does not run `docker compose up` as a second process manager. Fetch the reviewed file from this public repository; no `.git` directory is required on the VM. Replace the example path with the actual data mount path, then install it once:
 
 ```sh
-cd /srv/cloud-vm-docker-starter
-DATA_MOUNT=/srv/example-app-data   # replace with the actual mount point
-findmnt --mountpoint "$DATA_MOUNT"
-sudo install -d -m 0755 /etc/systemd/system/docker.service.d
-sed "s|/srv/example-app-data|${DATA_MOUNT}|g" systemd/docker.service.d/10-require-data-disk.conf.example | sudo tee /etc/systemd/system/docker.service.d/10-require-data-disk.conf >/dev/null
-sudo systemctl daemon-reload
-sudo systemd-analyze verify docker.service
-sudo systemctl cat docker.service
-sudo systemctl is-enabled docker.service
+(
+  set -e
+  set -o pipefail
+  TEMPLATE=/tmp/10-require-data-disk.conf.example
+  DATA_MOUNT=/srv/cloud-app-data   # replace only if your mount point differs
+  curl -fsSL https://raw.githubusercontent.com/antonmitsev/cloud-vm-docker-starter/main/systemd/docker.service.d/10-require-data-disk.conf.example -o "$TEMPLATE"
+  findmnt --mountpoint "$DATA_MOUNT"
+  test -f "$TEMPLATE"
+  sudo install -d -m 0755 /etc/systemd/system/docker.service.d
+  sed "s|/srv/example-app-data|${DATA_MOUNT}|g" "$TEMPLATE" | sudo tee /etc/systemd/system/docker.service.d/10-require-data-disk.conf >/dev/null
+  sudo systemctl daemon-reload
+  sudo systemd-analyze verify docker.service
+  sudo systemctl cat docker.service
+  sudo systemctl is-enabled docker.service
+)
 ```
 
-Continue past `findmnt` only if it shows the separate data disk. Review `systemctl cat` and confirm both drop-in paths are the intended mount point. `systemctl is-enabled` should report `enabled`; enable Docker if it does not. `daemon-reload` alone does not restart Docker or disrupt the running gateway. Test the new boot order during a planned VM reboot, then check the mount, Docker, Compose, and public health response:
+Stop if any check or download fails. Review `systemctl cat` and confirm both drop-in paths are the intended mount point. `systemctl is-enabled` should report `enabled`; enable Docker if it does not. `daemon-reload` alone does not restart Docker or disrupt the running gateway. Test the new boot order during a planned VM reboot, then check the mount, Docker, Compose, and public health response:
 
 ```sh
-DATA_MOUNT=/srv/example-app-data   # use the same actual mount point after reconnecting
+DATA_MOUNT=/srv/cloud-app-data   # use the same actual mount point after reconnecting
 findmnt --mountpoint "$DATA_MOUNT"
 systemctl is-active docker.service
 cd /srv/cloud-vm-docker-starter
@@ -51,7 +57,7 @@ sudo docker compose up -d
 
 The first command starts the current configuration. The next two pull and apply updated images when an update is intended. Review release notes and keep a backup before changing images or application database schema. `caddy:2` follows current Caddy 2 releases when pulled; record the deployed image digest if exact rollback is required.
 
-For configuration changes, update the repository checkout, then run `sudo docker compose up -d`. Check `sudo docker compose ps`, the gateway logs, and the HTTPS URL. Application-specific deploy and migration steps belong to the application repository.
+For a configuration change from this repository, run `sudo /usr/local/sbin/cloud-vm-start` after reviewing the desired commit; the script fetches the archive and recreates the gateway so that Caddy reads a changed `Caddyfile`. Check `sudo docker compose ps`, the gateway logs, and the HTTPS URL. Application-specific deploy and migration steps belong to the application repository.
 
 ## Cloudflare and origin access
 

@@ -54,21 +54,17 @@ sudo systemctl status docker
 
 Use `sudo docker ...` for operator commands. Membership in the `docker` group grants root-level privileges, so do not add users to it merely to avoid typing `sudo`. Docker and containerd normally start on boot on Ubuntu; the Compose service also has `restart: unless-stopped`. See Docker's [post-install notes](https://docs.docker.com/engine/install/linux-postinstall/).
 
-## 4. Place this repository on the VM
+## 4. Fetch the repository and start Compose on the VM
 
-After the chosen DNS route can reach the VM's static address:
+After the chosen DNS name points to the VM's static address and TCP 80/443 can reach Caddy, use the repository's [first-start script](../start.sh). This needs no Git installation or `.git` directory on the VM:
 
 ```sh
-sudo git clone REPOSITORY_URL /srv/cloud-vm-docker-starter
-cd /srv/cloud-vm-docker-starter
-sudo cp .env.example .env
-sudoedit .env
-findmnt --mountpoint /srv/cloud-app-data
-sudo docker compose config
-sudo docker compose up -d
+curl -fsSL https://raw.githubusercontent.com/antonmitsev/cloud-vm-docker-starter/main/start.sh -o /tmp/cloud-vm-start.sh
+sudo install -m 0755 /tmp/cloud-vm-start.sh /usr/local/sbin/cloud-vm-start
+sudo APP_DOMAIN=api.example.com /usr/local/sbin/cloud-vm-start
 ```
 
-Replace `APP_DOMAIN` with your real domain. The readiness page should then answer at `https://<your-domain>/`, and `https://<your-domain>/health` should return `healthy`. Configure the uptime check to request `/health` and match that response. Caddy needs matching DNS, a reachable origin on TCP 80/443 for its certificate flow, and writable persistent `/data`; with Cloudflare in front, also check the separate edge and origin certificates. See [automatic HTTPS](https://caddyserver.com/docs/automatic-https) and the [Cloudflare certificate guide](cloudflare-single-subdomain-bg.md#сертификати-и-подновяване).
+Replace `api.example.com` with your real domain. The script keeps an existing `/srv/cloud-vm-docker-starter/.env`, so review that file locally on the VM if this is a redeploy. The readiness page should then answer at `https://<your-domain>/`, and `https://<your-domain>/health` should return `healthy`. Configure the uptime check to request `/health` and match that response. Caddy needs matching DNS, a reachable origin on TCP 80/443 for its certificate flow, and writable persistent `/data`; with Cloudflare in front, also check the separate edge and origin certificates. See [automatic HTTPS](https://caddyserver.com/docs/automatic-https) and the [Cloudflare certificate guide](cloudflare-single-subdomain-bg.md#сертификати-и-подновяване).
 
 The optional `DATA_ROOT`, `BIND_ADDRESS`, and port overrides in `compose.yaml` exist for local simulation. On the VM, leave them unset so Compose uses `/srv/cloud-app-data`, public TCP 80, and public TCP 443. Do not copy `local.env.example` to the VM.
 

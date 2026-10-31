@@ -16,3 +16,4 @@ infra/*.tfvars.json
 infra/backend.hcl
 infra/*.tfplan
 infra/crash.log
+caddy-acme.log

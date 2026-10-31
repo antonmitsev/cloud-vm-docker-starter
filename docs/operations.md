@@ -30,6 +30,21 @@ After an origin IP, DNS, certificate, or firewall change, check the public `/hea
 
 Cloudflare renews the visitor-facing custom-hostname certificate; Caddy renews the separate origin certificate. Check Cloudflare's certificate status and Caddy's ACME renewal logs and expiry independently. Caddy's HTTP-01 challenge needs a working port-80 path through Cloudflare; a public `200` from the edge alone does not prove the origin certificate will renew. See [certificate renewal details](cloudflare-single-subdomain-bg.md#сертификати-и-подновяване).
 
+### Check Caddy's origin certificate renewal
+
+Run these commands **on the VM**, after connecting through IAP. Use the actual API hostname in place of `api.example.com`; the public TLS handshake shows Cloudflare's edge certificate, not Caddy's certificate.
+
+```sh
+openssl s_client -connect 127.0.0.1:443 -servername api.example.com </dev/null 2>/dev/null | openssl x509 -noout -subject -issuer -dates
+openssl s_client -connect 127.0.0.1:443 -servername api.example.com </dev/null 2>/dev/null | openssl x509 -noout -checkend 1209600
+cd /srv/cloud-vm-docker-starter
+sudo docker compose logs gateway 2>&1 | grep -Ei 'acme|certificate|challenge|renew|error' | tail -80
+```
+
+The second command exits nonzero if the certificate expires within 14 days or the certificate cannot be read. Record the current `notAfter` date and repeat the check at least weekly, then daily once the certificate enters its renewal window. [Caddy normally starts trying to renew](https://caddyserver.com/docs/caddyfile/directives/tls) with about one third of the certificate's lifetime left, though the CA may specify a different window. After renewal, confirm that the **origin** `notAfter` date has moved forward and that the logs show successful issuance without unresolved challenge errors. An unchanged date before the renewal window is expected; an unchanged date near expiry needs investigation. Keep the 14-day check as an alert threshold when VM-side monitoring is added. The existing public uptime check detects an expired origin certificate only after [Cloudflare starts rejecting it](https://developers.cloudflare.com/ssl/origin-configuration/ssl-modes/full-strict/), so it is not an advance-expiry alert.
+
+If renewal fails, inspect the Caddy logs and confirm that Cloudflare passes `/.well-known/acme-challenge/` requests to Caddy on port 80 without a [WAF challenge, Worker interception, or redirect rule](https://developers.cloudflare.com/ssl/edge-certificates/changing-dcv-method/troubleshooting/). [Caddy can fall back](https://caddyserver.com/docs/automatic-https#acme-challenges) from TLS-ALPN-01 to HTTP-01, but a normal request for a nonexistent challenge token is not proof that a real ACME validation succeeded. Do not remove the stored certificate or repeatedly request production certificates just to test the path; use an [ACME staging endpoint](https://caddyserver.com/docs/automatic-https#testing) for a controlled issuance test.
+
 To remove Cloudflare from the request path, [follow the direct-HTTPS rollback](cloudflare-single-subdomain-bg.md#връщане-към-директен-https-без-cloudflare): verify Caddy's certificate, reopen public TCP 80/443 in GCP, test the origin directly with the API hostname and SNI, then replace only the API CNAME with an A record at the primary DNS provider. No new certificate setup is needed while Caddy's existing certificate remains valid.
 
 ## Recovery boundaries

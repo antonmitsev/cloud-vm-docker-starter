@@ -11,6 +11,7 @@ A small, application-independent starting point for one Google Cloud Compute Eng
 - [`docs/from-zero-bg.md`](docs/from-zero-bg.md): from Google account and billing to disk, Docker, HTTPS, backup checks, uptime alerts, and Cloudflare.
 - [`docs/node-apps-bg.md`](docs/node-apps-bg.md): planned separate Node.js project, one container per module, and Caddy path routing through a shared Docker network.
 - [`example-applications/`](example-applications/README.md): runnable `gaz` and `mas` Node.js examples; edit one server file and restart only its container.
+- [`compose.apps.yaml`](compose.apps.yaml) and [`Caddyfile.apps`](Caddyfile.apps): optional gateway configuration for routing `/gaz` and `/mas` to separate application containers.
 - [`docs/google-cloud-vm.md`](docs/google-cloud-vm.md): create the VM, restrict network access, attach and mount a data disk, and install Docker.
 - [`compose.yaml`](compose.yaml) and [`Caddyfile`](Caddyfile): a minimal HTTPS readiness page at `/` and a dedicated `/health` endpoint. Route application traffic and health checks to the app when it exists.
 - [`docs/sqlite-and-backups.md`](docs/sqlite-and-backups.md): mount a future SQLite database directory, take consistent backups, and restore it.

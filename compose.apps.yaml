@@ -1,0 +1,15 @@
+services:
+  gateway:
+    volumes:
+      - type: bind
+        source: ./Caddyfile.apps
+        target: /etc/caddy/Caddyfile
+        read_only: true
+        bind:
+          create_host_path: false
+    networks: [app_edge]
+
+networks:
+  app_edge:
+    external: true
+    name: app-edge

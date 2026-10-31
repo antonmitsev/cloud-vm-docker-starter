@@ -1,0 +1,25 @@
+{$APP_DOMAIN} {
+	handle /health {
+		respond "healthy" 200
+	}
+
+	@gaz path /gaz /gaz/*
+	handle @gaz {
+		uri strip_prefix /gaz
+		reverse_proxy gaz:8080
+	}
+
+	@mas path /mas /mas/*
+	handle @mas {
+		uri strip_prefix /mas
+		reverse_proxy mas:8081
+	}
+
+	handle / {
+		respond "Cloud VM ready" 200
+	}
+
+	handle {
+		respond 404
+	}
+}

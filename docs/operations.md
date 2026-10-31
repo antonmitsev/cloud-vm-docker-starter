@@ -10,6 +10,37 @@ sudo docker compose logs --tail=100 gateway
 
 `findmnt` must show `/srv/cloud-app-data` as its own mount point. If it does not, fix the disk mount before starting containers. The Compose file refuses to create missing bind source directories, but an unexpected host directory can still hide a failed disk mount.
 
+## Start Docker only after the data disk
+
+[Docker normally starts on Ubuntu boot](https://docs.docker.com/engine/install/linux-postinstall/) and restores previously started Compose containers because `gateway` uses [`restart: unless-stopped`](https://docs.docker.com/engine/containers/start-containers-automatically/). Compose itself is not a boot daemon, and no Bash startup script is needed for that normal restart. The current automatic restart needs a mount guard: Docker must not start the container using an ordinary directory on the boot disk if the separate data disk is missing.
+
+The [example systemd drop-in](../systemd/docker.service.d/10-require-data-disk.conf.example) adds [`RequiresMountsFor=`](https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html) to order `docker.service` after the mount and an `ExecStartPre=` check that the path is actually a mount point. It controls the Docker daemon's start order; it does not run `docker compose up` as a second process manager. First update the VM checkout to a reviewed commit containing this file. Replace the example path with the real data mount path from the private operator record, then install it once on the VM:
+
+```sh
+cd /srv/cloud-vm-docker-starter
+DATA_MOUNT=/srv/example-app-data   # replace with the actual mount point
+findmnt --mountpoint "$DATA_MOUNT"
+sudo install -d -m 0755 /etc/systemd/system/docker.service.d
+sed "s|/srv/example-app-data|${DATA_MOUNT}|g" systemd/docker.service.d/10-require-data-disk.conf.example | sudo tee /etc/systemd/system/docker.service.d/10-require-data-disk.conf >/dev/null
+sudo systemctl daemon-reload
+sudo systemd-analyze verify docker.service
+sudo systemctl cat docker.service
+sudo systemctl is-enabled docker.service
+```
+
+Continue past `findmnt` only if it shows the separate data disk. Review `systemctl cat` and confirm both drop-in paths are the intended mount point. `systemctl is-enabled` should report `enabled`; enable Docker if it does not. `daemon-reload` alone does not restart Docker or disrupt the running gateway. Test the new boot order during a planned VM reboot, then check the mount, Docker, Compose, and public health response:
+
+```sh
+DATA_MOUNT=/srv/example-app-data   # use the same actual mount point after reconnecting
+findmnt --mountpoint "$DATA_MOUNT"
+systemctl is-active docker.service
+cd /srv/cloud-vm-docker-starter
+sudo docker compose ps
+curl -fsS https://YOUR_DOMAIN/health
+```
+
+If the disk does not mount, Docker should fail to start rather than start Caddy with the wrong data directory. Fix the mount before starting Docker. `restart: unless-stopped` does not recreate a container that was removed with `docker compose down`, and it does not restart a container that an operator deliberately stopped; use `docker compose up -d` after those actions.
+
 ## Start and update
 
 ```sh

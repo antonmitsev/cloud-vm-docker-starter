@@ -1,0 +1,8 @@
+[Unit]
+# Docker restores containers with restart policies when its daemon starts.
+# Require the Compose data disk first, including mounts declared in /etc/fstab.
+RequiresMountsFor=/srv/example-app-data
+
+[Service]
+# Fail closed if the path exists only on the boot disk.
+ExecStartPre=/usr/bin/mountpoint -q /srv/example-app-data

@@ -6,7 +6,7 @@
 
 ## 0. Подготви достъпа, преди Google Cloud проекта
 
-- [ ] **В браузъра:** влез или създай [Google акаунт](https://accounts.google.com/) с включена двуфакторна защита. Отвори [Google Cloud Console](https://console.cloud.google.com/) и приеми началните условия, ако се покажат. Провери, че можеш да отвориш [Cloud Shell](https://console.cloud.google.com/cloudshell) от иконата `>_` горе вдясно. Cloud Shell е отделен терминал, а не бъдещата VM.
+- [ ] **В браузъра:** влез или създай [Google акаунт](https://accounts.google.com/) с включена двуфакторна защита. Отвори [Google Cloud Console](https://console.cloud.google.com/) и приеми началните условия, ако се покажат. Провери, че можеш да отвориш [Cloud Shell](https://shell.cloud.google.com/) от иконата `>_` горе вдясно или от директния линк. Cloud Shell е отделен терминал, а не бъдещата VM.
 - [ ] **При регистратора на основния домейн:** осигури домейн, чийто DNS можеш да редактираш, например `example.com`. Провери, че можеш да добавяш `A`, `CNAME` и `TXT` записи. Избери свободен поддомейн, например `api.example.com`. Запиши при кой доставчик са авторитетните nameserver-и.
 - [ ] **В [GitHub проекта](https://github.com/antonmitsev/cloud-vm-docker-starter):** отвори `README.md`, `compose.yaml` и `Caddyfile`; потвърди, че ще стартираш този публичен код. На VM не е нужен Git checkout.
 - [ ] **В [Cloudflare](https://dash.cloudflare.com/):** направи акаунт, до който ще имаш достъп и след настройката. Вторият домейн за Cloudflare ще добавиш на стъпка 12. Финалният резултат на този чеклист включва Cloudflare.

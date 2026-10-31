@@ -44,6 +44,7 @@ mkdir "$workdir/source"
 tar -xzf "$workdir/source.tar.gz" -C "$workdir/source" --strip-components=1
 test -f "$workdir/source/compose.yaml"
 test -f "$workdir/source/Caddyfile"
+test -f "$workdir/source/start.sh"
 
 install -d -m 0755 "$DEPLOY_DIR"
 shopt -s dotglob nullglob

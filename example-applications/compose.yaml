@@ -1,0 +1,49 @@
+services:
+  gaz:
+    image: node:26-alpine
+    user: node
+    working_dir: /app
+    command: [node, server.mjs]
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: ./gaz
+        target: /app
+        read_only: true
+        bind:
+          create_host_path: false
+    networks: [app_edge]
+
+  mas:
+    image: node:26-alpine
+    user: node
+    working_dir: /app
+    command: [node, server.mjs]
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: ./mas
+        target: /app
+        read_only: true
+        bind:
+          create_host_path: false
+    networks: [app_edge]
+
+  gateway_demo:
+    profiles: [demo]
+    image: caddy:2
+    ports:
+      - "127.0.0.1:8088:80"
+    volumes:
+      - type: bind
+        source: ./Caddyfile.demo
+        target: /etc/caddy/Caddyfile
+        read_only: true
+        bind:
+          create_host_path: false
+    networks: [app_edge]
+
+networks:
+  app_edge:
+    external: true
+    name: app-edge

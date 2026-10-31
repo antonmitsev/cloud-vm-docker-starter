@@ -1,0 +1,17 @@
+:80 {
+	@gaz path /gaz /gaz/*
+	handle @gaz {
+		uri strip_prefix /gaz
+		reverse_proxy gaz:8080
+	}
+
+	@mas path /mas /mas/*
+	handle @mas {
+		uri strip_prefix /mas
+		reverse_proxy mas:8081
+	}
+
+	handle {
+		respond "not found" 404
+	}
+}

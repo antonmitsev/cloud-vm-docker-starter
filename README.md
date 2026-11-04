@@ -13,6 +13,7 @@ A small, application-independent starting point for one Google Cloud Compute Eng
 - [`docs/docker-disk-guard-bg.md`](docs/docker-disk-guard-bg.md): install and test the Docker data-disk guard on the VM.
 - [`example-applications/`](example-applications/README.md): runnable `gaz` and `mas` Node.js examples; edit one server file and restart only its container.
 - [`compose.apps.yaml`](compose.apps.yaml) and [`Caddyfile.apps`](Caddyfile.apps): optional gateway configuration for routing `/gaz` and `/mas` to separate application containers.
+- [`compose.gcp-logging.yaml`](compose.gcp-logging.yaml) and [`start-gateway.sh`](start-gateway.sh): GCP logging overlay and gateway restart for the VM using those application routes. See the [example application instructions](example-applications/README.md#cloud-logging-на-настоящата-gcp-vm) before applying.
 - [`docs/google-cloud-vm.md`](docs/google-cloud-vm.md): create the VM, restrict network access, attach and mount a data disk, and install Docker.
 - [`compose.yaml`](compose.yaml) and [`Caddyfile`](Caddyfile): a minimal HTTPS readiness page at `/` and a dedicated `/health` endpoint. Route application traffic and health checks to the app when it exists.
 - [`docs/sqlite-and-backups.md`](docs/sqlite-and-backups.md): mount a future SQLite database directory, take consistent backups, and restore it.

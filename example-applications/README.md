@@ -42,7 +42,25 @@ sudo docker compose -f compose.yaml -f compose.apps.yaml config --quiet
 sudo docker compose -f compose.yaml -f compose.apps.yaml up -d gateway
 ```
 
-Провери публичните `/health`, `/gaz`, `/mas` и двата application `/health` пътя. При следващи операции с gateway използвай **същите два `-f` аргумента**. Основният `start.sh` стартира само базовия `compose.yaml`, така че негово повторно изпълнение ще върне базовия Caddy; след това приложи overlay командата отново. Архивирай или доставяй собствените Node промени отделно, преди да обновяваш файловете на инфраструктурния проект.
+### Cloud Logging на настоящата GCP VM
+
+VM service account-ът трябва да има `roles/logging.logWriter` и подходящ access scope. `gcplogs` изпраща stdout/stderr към Cloud Logging; промяната на драйвера изисква пресъздаване на контейнера. Проверявай всяка услуга след прилагането, защото тя може да бъде кратко недостъпна.
+
+На VM, от `/srv/cloud-vm-docker-starter/example-applications`, приложи logging overlay първо за `gaz`, после за `mas`:
+
+```sh
+sudo docker compose -f compose.yaml -f compose.gcp-logging.yaml config --quiet
+sudo docker compose -f compose.yaml -f compose.gcp-logging.yaml up -d --force-recreate gaz
+# Провери публичния /gaz/health.
+sudo docker compose -f compose.yaml -f compose.gcp-logging.yaml up -d --force-recreate mas
+# Провери публичния /mas/health.
+```
+
+При следващи Compose операции, които пресъздават услугите, включвай двата файла. За Caddy от `/srv/cloud-vm-docker-starter` изпълни `sudo bash ./start-gateway.sh`: той проверява data disk и мрежата `app-edge`, след което прилага базовия Compose файл, `compose.apps.yaml` и `compose.gcp-logging.yaml`. Проверявай публичните `/health`, `/gaz/health` и `/mas/health`. Скриптът пресъздава gateway и може да причини кратко прекъсване; той не обновява файловете от Git и не стартира Node приложенията.
+
+В Logs Explorer използвай `logName="projects/PROJECT_ID/logs/gcplogs-docker-driver"` и `jsonPayload.container.name` с действителното име от записа. Стандартният `start.sh` остава за базово първоначално инсталиране и не запазва тези overlays при пресъздаване на gateway.
+
+Провери публичните `/health`, `/gaz`, `/mas` и двата application `/health` пътя. Без Cloud Logging използвай двата `-f` аргумента от примера; с Cloud Logging използвай трите файла чрез `start-gateway.sh`. Основният `start.sh` стартира само базовия `compose.yaml`, така че негово повторно изпълнение ще върне базовия Caddy. Архивирай или доставяй собствените Node промени отделно, преди да обновяваш файловете на инфраструктурния проект.
 
 Не публикувай 8080/8081 в GCP firewall и не добавяй `ports:` към Node услугите. При пренасяне на приложенията на **друга VM** преразгледай вътрешната връзка, мрежовите правила и TLS. За истинско приложение добави собствени health проверки, persistence/backup и контролирани image версии.
 

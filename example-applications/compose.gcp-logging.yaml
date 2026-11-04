@@ -1,0 +1,7 @@
+services:
+  gaz:
+    logging:
+      driver: gcplogs
+  mas:
+    logging:
+      driver: gcplogs

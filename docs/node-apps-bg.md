@@ -169,22 +169,47 @@ networks:
 
 Няма `ports:`. `node:26-alpine` е пример за актуална към октомври 2026 г. LTS линия; при реално внедряване избери поддържан, обновен образ и запиши точната версия/digest. [Node release status](https://nodejs.org/en/about/previous-releases). В `.gitignore` включи `.env`, `node_modules/` и файлове с данни; не поставяй тайни в `plugin.json`.
 
+### Логове за GCP
+
+За приложение на настоящата GCP VM добави отделен `compose.gcp-logging.yaml` в Node проекта. За примера с двете услуги:
+
+```yaml
+services:
+  gaz:
+    logging:
+      driver: gcplogs
+  mas:
+    logging:
+      driver: gcplogs
+```
+
+За нова услуга като `foo` добави аналогичен запис под нейното име. Приложението трябва да пише към stdout/stderr; файловете с логове в контейнера не се изпращат автоматично. На VM service account-ът трябва да има `roles/logging.logWriter` в проекта за логовете и подходящ access scope. Настоящата VM е проверена за това през ноември 2026 г.; при нова VM провери отново.
+
+На GCP включвай overlay файла при всяко пресъздаване на услугите:
+
+```sh
+sudo docker compose -f compose.yaml -f compose.gcp-logging.yaml config --quiet
+sudo docker compose -f compose.yaml -f compose.gcp-logging.yaml up -d --force-recreate foo
+```
+
+В Logs Explorer потърси `jsonPayload.container.name:"foo"` и провери реалните записи. Настройката на драйвера влиза в сила при пресъздаване, което може да прекъсне услугата за кратко. Локално използвай само `compose.yaml`, без GCP overlay. За учебните `gaz` и `mas` готовият overlay е в [`example-applications`](../example-applications/compose.gcp-logging.yaml).
+
 ## 3. Първо внедряване, в този ред
 
 1. **На VM:** потвърди, че data disk е монтиран и `app-edge` мрежата съществува. Постави **отделния Node проект** в самостоятелна папка, например `/srv/node-plugin-server`. Файловете могат да се доставят като архив; `.git` на VM не е задължителен. Запази правата за четене на `server.mjs` и двата плъгина за потребителя `node` в контейнера.
-2. **В папката на Node проекта на VM:** `sudo docker compose config --quiet`, после `sudo docker compose up -d gaz mas` и `sudo docker compose ps`. В логовете трябва да се виждат слушащи 8080 и 8081. Провери поотделно вътре в контейнерите: `sudo docker compose exec -T gaz node -e "fetch('http://127.0.0.1:8080/health').then(async r => console.log(r.status, await r.text()))"` и аналогично за `mas` на 8081. Очакване: `200 healthy` и за двата.
-3. **В инфраструктурния проект:** след commit/push на проверените `Caddyfile` и `compose.yaml`, на VM изпълни `sudo /usr/local/sbin/cloud-vm-start`. Този скрипт обновява **само инфраструктурния проект** и пресъздава Caddy. Не копира и не стартира Node проекта.
+2. **В папката на Node проекта на VM:** използвай `sudo docker compose -f compose.yaml -f compose.gcp-logging.yaml config --quiet`, после същите `-f` аргументи с `up -d gaz mas` и `ps`. В логовете трябва да се виждат слушащи 8080 и 8081. Провери поотделно вътре в контейнерите: `sudo docker compose -f compose.yaml -f compose.gcp-logging.yaml exec -T gaz node -e "fetch('http://127.0.0.1:8080/health').then(async r => console.log(r.status, await r.text()))"` и аналогично за `mas` на 8081. Очакване: `200 healthy` и за двата.
+3. **В инфраструктурния проект на настоящата VM:** маршрутите са в `Caddyfile.apps`. След преглед, commit/push и контролирано доставяне на променените файлове на VM, от `/srv/cloud-vm-docker-starter` изпълни `sudo bash ./start-gateway.sh`. Скриптът използва `compose.yaml`, `compose.apps.yaml` и `compose.gcp-logging.yaml`, като пресъздава gateway. Той не сваля файлове и не стартира Node проекта. Не използвай базовия `cloud-vm-start` за тази конфигурация: той може да върне gateway без маршрутите и Cloud Logging.
 4. **Отвън през Cloudflare:** провери `curl -i https://api.example.com/gaz/health`, `curl -i https://api.example.com/mas/health`, `curl -i https://api.example.com/health` и един нормален маршрут на всеки плъгин. Очакване: `200 healthy` за двата плъгина, `cf-ray` през Cloudflare, а съществуващият `/health` продължава да работи. `api.example.com/gazette` трябва да остане `404`.
 5. **Google Cloud Monitoring:** добави отделни uptime проверки/имейл аларми за `/gaz/health` и `/mas/health`. Сегашният `/health` проверява само Caddy и няма да открие спрян Node контейнер. За същия hostname не се добавят нов DNS запис, Cloudflare custom hostname или публични GCP firewall портове.
 
 ## 4. Добавяне или обновяване на плъгин
 
-За вече регистриран маршрут (`gaz` или `mas`): обнови само неговата папка в **Node проекта** и изпълни от неговата VM папка `sudo docker compose up -d --force-recreate gaz` (или `mas`). Провери неговия `/health` и нормална заявка; другият контейнер остава работещ. Не рестартирай целия Docker daemon. Обикновеното `docker compose restart` не прилага промени в Compose environment/configuration; `up --force-recreate` ги прилага. [Docker Compose restart](https://docs.docker.com/reference/cli/docker/compose/restart/).
+За вече регистриран маршрут (`gaz` или `mas`): обнови само неговата папка в **Node проекта** и изпълни от неговата VM папка `sudo docker compose -f compose.yaml -f compose.gcp-logging.yaml up -d --force-recreate gaz` (или `mas`). Провери неговия `/health` и нормална заявка; другият контейнер остава работещ. Не рестартирай целия Docker daemon. Обикновеното `docker compose restart` не прилага промени в Compose environment/configuration; `up --force-recreate` ги прилага. [Docker Compose restart](https://docs.docker.com/reference/cli/docker/compose/restart/).
 
 За **нов публичен път**, например `/foo`:
 
-1. В отделния Node проект добави `plugins/foo/plugin.json` и `index.mjs`, избери свободен вътрешен порт и добави нова Compose услуга `foo` със същия шаблон, `PLUGIN_NAME: foo` и mount на `./plugins/foo`. Commit/достави Node проекта; стартирай само `foo` и провери неговия вътрешен `/health`.
-2. В инфраструктурния проект добави `@foo path /foo /foo/*` и `handle @foo { uri strip_prefix /foo; reverse_proxy foo:<port> }` в Caddyfile; провери, commit/push и приложи чрез `cloud-vm-start`. Провери публичния `/foo/health` и добави uptime alert.
+1. В отделния Node проект добави `plugins/foo/plugin.json` и `index.mjs`, избери свободен вътрешен порт и добави нова Compose услуга `foo` със същия шаблон, `PLUGIN_NAME: foo` и mount на `./plugins/foo`. Добави `foo` и в GCP logging overlay файла по примера по-горе. Commit/достави Node проекта; стартирай само `foo` с двата Compose файла и провери неговия вътрешен `/health` и записа в Logs Explorer.
+2. В инфраструктурния проект добави `@foo path /foo /foo/*` и `handle @foo { uri strip_prefix /foo; reverse_proxy foo:<port> }` в `Caddyfile.apps`; провери, commit/push, достави файловете и приложи чрез `start-gateway.sh`. Провери публичните `/health`, `/gaz/health`, `/mas/health` и `/foo/health`; добави uptime alert за новата услуга.
 
 Така добавянето е **папка + кратка регистрация в двата Compose/Caddy проекта + пресъздаване на засегнатите контейнери**. Само папка и една променлива не могат да създадат нов Caddy маршрут: Caddy трябва да знае кой път към кой upstream сочи. Ако броят на модулите нарасне, отделна deploy команда може да генерира Compose услуги и Caddy маршрути от manifest-ите; тя трябва да валидира имена/портове, да приложи първо Node, после Caddy, и да поддържа rollback. Засега двата явни маршрута са по-прости за проверка.
 
@@ -193,4 +218,4 @@ networks:
 - Монтираният plugin код може да се сменя без build, но той е **изпълним код**. Пази го в отделния контролиран проект; не приемай произволни файлове от API заявки. Ако плъгинът има допълнителни npm зависимости или native модули, публикувай версиониран image, вместо да разчиташ само на копиране на папка.
 - Сега `node:26-alpine` зарежда `server.mjs` и plugin папките чрез bind mounts. При възстановяване на VM трябва да доставиш отново Node проекта; snapshot на data disk не включва тези source файлове, ако са в `/srv/node-plugin-server` на boot disk. За реална услуга предпочети image, изграден извън малката VM и записан с digest в registry; виж [плана за внедряване](gcp-current-state.md#handoff-първо-внедряване-на-приложението).
 - Преди пускане на плъгин с база: монтирай data disk за неговите данни, направи автоматичен съгласуван backup извън VM, провери restore и добави аларма при пропуснат backup. Отделният контейнер сам по себе си не решава възстановяването на данни.
-- При проблем върни предишния Node проект или само засегнатия plugin контейнер. При Caddy проблем върни предишния проверен инфраструктурен commit чрез `SOURCE_REF=<пълен-комит> /usr/local/sbin/cloud-vm-start`, след което провери всички публични health пътища. Не сменяй schema само с rollback на image.
+- При проблем върни предишния Node проект или само засегнатия plugin контейнер. При Caddy проблем достави предишните проверени версии на инфраструктурните файлове и приложи отново трите Compose файла чрез `start-gateway.sh`, след което провери всички публични health пътища. Не използвай базовия `cloud-vm-start` за rollback на тази конфигурация; не сменяй schema само с rollback на image.
